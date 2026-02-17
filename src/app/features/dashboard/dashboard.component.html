@@ -1,62 +1,204 @@
 <div class="min-vh-100 bg-light">
-  <nav class="navbar navbar-expand-lg navbar-dark bg-gradient shadow-sm">
-    <div class="container-fluid">
-      <a class="navbar-brand fw-bold text-black" href="#">
-        <span class="fs-4">📊 Kata Encuestas</span>
-      </a>
-      @if (currentUser) {
-        <div class="d-flex align-items-center">
-          <span class="me-3 fw-medium">Hola, {{ currentUser.name }}</span>
-          <button (click)="logout()" class="btn btn-danger btn-sm">Cerrar sesión</button>
-        </div>
-      }
-    </div>
-  </nav>
+  <app-navbar></app-navbar>
 
-  <main class="container mt-5">
-    <div class="card shadow-sm border-0 mb-4">
-      <div class="card-body p-4 text-center">
-        <h1 class="mb-3">¡Bienvenido al Dashboard!</h1>
+  <main class="container mt-4 pb-5">
+    <!-- Sección de Bienvenida -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="mb-1">Dashboard de Encuestas</h2>
         @if (currentUser) {
-          <p class="text-muted">Conectado como: <strong>{{ currentUser.email }}</strong></p>
+          <p class="text-muted mb-0">Bienvenido, {{ currentUser.name }}</p>
         }
-        <div class="alert alert-info d-inline-block mt-3" role="alert">
-          <p class="mb-2">✅ Autenticación exitosa</p>
-          <p class="mb-2">🔐 Tu sesión está protegida con JWT</p>
-          <p class="mb-0">🚀 Listo para implementar más funcionalidades</p>
+      </div>
+      <button (click)="createNewSurvey()" class="btn btn-primary btn-lg">
+        <i class="bi bi-plus-circle me-2"></i>Nueva Encuesta
+      </button>
+    </div>
+
+    <!-- Estadísticas Importantes -->
+    <div class="row g-4 mb-5">
+      <div class="col-md-3">
+        <div class="card shadow-sm border-0 stat-card stat-card-primary">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <p class="text-muted mb-1 small">Total de Encuestas</p>
+                <h2 class="mb-0 fw-bold">{{ totalSurveys }}</h2>
+              </div>
+              <div class="stat-icon bg-primary">
+                <i class="bi bi-clipboard-data"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow-sm border-0 stat-card stat-card-success">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <p class="text-muted mb-1 small">Total Respuestas</p>
+                <h2 class="mb-0 fw-bold">{{ totalResponses }}</h2>
+              </div>
+              <div class="stat-icon bg-success">
+                <i class="bi bi-check-circle"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow-sm border-0 stat-card stat-card-info">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <p class="text-muted mb-1 small">Encuestas Activas</p>
+                <h2 class="mb-0 fw-bold">{{ activeSurveys }}</h2>
+              </div>
+              <div class="stat-icon bg-info">
+                <i class="bi bi-broadcast"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow-sm border-0 stat-card stat-card-warning">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <p class="text-muted mb-1 small">Borradores</p>
+                <h2 class="mb-0 fw-bold">{{ draftSurveys }}</h2>
+              </div>
+              <div class="stat-icon bg-warning">
+                <i class="bi bi-file-earmark-text"></i>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="row g-4">
-      <div class="col-md-4">
-        <div class="card h-100 shadow-sm border-0 hover-card">
-          <div class="card-body text-center p-4">
-            <div class="display-1 mb-3">📝</div>
-            <h5 class="card-title fw-bold">Encuestas</h5>
-            <p class="card-text text-muted">Próximamente podrás crear y gestionar encuestas</p>
-          </div>
-        </div>
+    <!-- Listado de Encuestas -->
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold">Mis Encuestas</h5>
+        <small class="text-muted">
+          Estado: {{ isLoading ? 'Cargando...' : 'Listo' }} | 
+          Encuestas: {{ surveys.length }}
+        </small>
       </div>
-
-      <div class="col-md-4">
-        <div class="card h-100 shadow-sm border-0 hover-card">
-          <div class="card-body text-center p-4">
-            <div class="display-1 mb-3">❓</div>
-            <h5 class="card-title fw-bold">Preguntas</h5>
-            <p class="card-text text-muted">Configura las preguntas de tus encuestas</p>
+      <div class="card-body p-0">
+        @if (isLoading) {
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="text-muted mt-3">Cargando encuestas...</p>
           </div>
-        </div>
-      </div>
-
-      <div class="col-md-4">
-        <div class="card h-100 shadow-sm border-0 hover-card">
-          <div class="card-body text-center p-4">
-            <div class="display-1 mb-3">📊</div>
-            <h5 class="card-title fw-bold">Respuestas</h5>
-            <p class="card-text text-muted">Visualiza y analiza las respuestas</p>
+        } @else if (errorMessage) {
+          <div class="alert alert-danger m-3" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            {{ errorMessage }}
+            <button (click)="loadSurveys()" class="btn btn-sm btn-outline-danger ms-3">
+              Reintentar
+            </button>
           </div>
-        </div>
+        } @else if (surveys.length === 0) {
+          <div class="text-center py-5">
+            <div class="display-1 mb-3 text-muted">📝</div>
+            <h5 class="text-muted">No hay encuestas creadas</h5>
+            <p class="text-muted">Crea tu primera encuesta para comenzar</p>
+            <button (click)="createNewSurvey()" class="btn btn-primary mt-3">
+              Crear Primera Encuesta
+            </button>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col" class="ps-4">Título</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">Preguntas</th>
+                  <th scope="col">Respuestas</th>
+                  <th scope="col">Creador</th>
+                  <th scope="col">Fecha de Creación</th>
+                  <th scope="col">Expira</th>
+                  <th scope="col" class="text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (survey of surveys; track survey.id) {
+                  <tr>
+                    <td class="ps-4">
+                      <div>
+                        <div class="fw-semibold">{{ survey.title }}</div>
+                        <small class="text-muted">{{ survey.description }}</small>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge {{ getStatusBadgeClass(survey.status) }}">
+                        {{ getStatusLabel(survey.status) }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge bg-light text-dark border">
+                        <i class="bi bi-question-circle me-1"></i>
+                        {{ survey.questionsCount || survey.questions?.length || 0 }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge bg-light text-success border border-success">
+                        <i class="bi bi-chat-dots me-1"></i>
+                        {{ survey.responsesCount || 0 }}
+                      </span>
+                    </td>
+                    <td>
+                      <small class="text-muted">{{ survey.creator.name }}</small>
+                    </td>
+                    <td>
+                      <small class="text-muted">{{ survey.createdAt | date:'dd/MM/yyyy' }}</small>
+                    </td>
+                    <td>
+                      @if (survey.expiresAt) {
+                        <small class="text-muted">{{ survey.expiresAt | date:'dd/MM/yyyy' }}</small>
+                      } @else {
+                        <small class="text-muted">Sin expiración</small>
+                      }
+                    </td>
+                    <td>
+                      <div class="action-buttons">
+                        <button 
+                          (click)="editSurvey(survey.id)" 
+                          class="btn btn-sm btn-outline-primary"
+                          title="Editar">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button 
+                          (click)="viewResults(survey.id)" 
+                          class="btn btn-sm btn-outline-info"
+                          title="Ver resultados"
+                          [disabled]="!survey.responsesCount || survey.responsesCount === 0">
+                          <i class="bi bi-bar-chart"></i>
+                        </button>
+                        <button 
+                          (click)="deleteSurvey(survey.id)" 
+                          class="btn btn-sm btn-outline-danger"
+                          title="Eliminar">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </div>
     </div>
   </main>

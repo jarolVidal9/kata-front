@@ -1,0 +1,410 @@
+<div class="min-vh-100 bg-light">
+  <app-navbar></app-navbar>
+  
+  <div class="bg-white py-3 shadow-sm border-bottom">
+    <div class="container">
+      <div class="d-flex align-items-center">
+        <button (click)="cancel()" class="btn btn-outline-secondary btn-sm me-3" [disabled]="isSaving">
+          <i class="bi bi-arrow-left me-1"></i> Volver
+        </button>
+        <h2 class="mb-0">
+          <i class="bi bi-clipboard-check me-2 text-primary"></i>
+          {{ isEditMode ? 'Editar Encuesta' : 'Nueva Encuesta' }}
+        </h2>
+        @if (isLoading) {
+          <span class="ms-3">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+            <span class="ms-2 text-muted">Cargando...</span>
+          </span>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading) {
+    <div class="container mt-5 text-center">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-3">Cargando encuesta...</p>
+    </div>
+  } @else {
+  <div class="container mt-4 pb-5">
+    <!-- Información Básica de la Encuesta -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">
+          <i class="bi bi-info-circle me-2"></i>Información General
+        </h5>
+      </div>
+      <div class="card-body p-4">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="mb-3">
+              <label for="title" class="form-label fw-semibold">
+                Título de la Encuesta <span class="text-danger">*</span>
+              </label>
+              <input 
+                type="text" 
+                class="form-control form-control-lg" 
+                id="title"
+                [(ngModel)]="survey.title"
+                placeholder="Ej: Encuesta de Satisfacción del Cliente"
+                maxlength="255">
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label fw-semibold">
+                Descripción
+              </label>
+              <textarea 
+                class="form-control" 
+                id="description"
+                [(ngModel)]="survey.description"
+                rows="3"
+                placeholder="Describe el propósito de esta encuesta..."></textarea>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="mb-3">
+              <label for="status" class="form-label fw-semibold">
+                Estado <span class="text-danger">*</span>
+              </label>
+              <select 
+                class="form-select" 
+                id="status"
+                [(ngModel)]="survey.status">
+                @for (status of statusOptions; track status.value) {
+                  <option [value]="status.value">{{ status.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="expiresAt" class="form-label fw-semibold">
+                Fecha de Expiración
+              </label>
+              <input 
+                type="date" 
+                class="form-control" 
+                id="expiresAt"
+                [(ngModel)]="survey.expiresAt">
+              <small class="text-muted">Dejar vacío para que no expire</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Constructor de Preguntas -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold">
+          <i class="bi bi-list-check me-2"></i>Preguntas de la Encuesta
+        </h5>
+      </div>
+      <div class="card-body p-4">
+        <!-- Listado de preguntas existentes -->
+        @if (survey.questions.length > 0) {
+          <div class="mb-4">
+            @for (question of survey.questions; track question.order; let i = $index) {
+              <div class="question-item border rounded p-3 mb-3">
+                @if (!question.isEditing) {
+                  <!-- Vista de pregunta -->
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                      <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-primary me-2">Pregunta {{ question.order }}</span>
+                        <span class="badge bg-secondary me-2">{{ getQuestionTypeLabel(question.type) }}</span>
+                        @if (question.required) {
+                          <span class="badge bg-danger">Obligatoria</span>
+                        }
+                      </div>
+                      <h6 class="mb-2">{{ question.title }}</h6>
+                      @if (needsOptions(question.type) && question.options.length > 0) {
+                        <div class="ms-3">
+                          <small class="text-muted d-block mb-1"><strong>Opciones:</strong></small>
+                          @for (option of question.options; track option; let i = $index) {
+                            <small class="text-muted d-block">• {{ option }}</small>
+                          }
+                        </div>
+                      }
+                    </div>
+                    <div class="d-flex gap-1">
+                      <button 
+                        (click)="moveQuestionUp(i)" 
+                        class="btn btn-sm btn-outline-secondary"
+                        [disabled]="i === 0"
+                        title="Subir">
+                        <i class="bi bi-arrow-up"></i>
+                      </button>
+                      <button 
+                        (click)="moveQuestionDown(i)" 
+                        class="btn btn-sm btn-outline-secondary"
+                        [disabled]="i === survey.questions.length - 1"
+                        title="Bajar">
+                        <i class="bi bi-arrow-down"></i>
+                      </button>
+                      <button 
+                        (click)="editQuestion(question)" 
+                        class="btn btn-sm btn-outline-primary"
+                        title="Editar">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button 
+                        (click)="removeQuestion(i)" 
+                        class="btn btn-sm btn-outline-danger"
+                        title="Eliminar">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <!-- Vista de edición de pregunta -->
+                  <div class="edit-question-form">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Título de la Pregunta</label>
+                      <input 
+                        type="text" 
+                        class="form-control"
+                        [(ngModel)]="question.title"
+                        placeholder="¿Cuál es tu pregunta?">
+                    </div>
+
+                    <div class="row mb-3">
+                      <div class="col-md-8">
+                        <label class="form-label fw-semibold">Tipo de Pregunta</label>
+                        <select class="form-select" [(ngModel)]="question.type">
+                          @for (type of questionTypes; track type.value) {
+                            <option [value]="type.value">{{ type.label }}</option>
+                          }
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label fw-semibold">¿Obligatoria?</label>
+                        <div class="form-check form-switch pt-2">
+                          <input 
+                            class="form-check-input" 
+                            type="checkbox" 
+                            [(ngModel)]="question.required"
+                            id="editRequired{{ i }}">
+                          <label class="form-check-label" for="editRequired{{ i }}">
+                            Sí
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    @if (needsOptions(question.type)) {
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Opciones</label>
+                        
+                        <!-- Lista de opciones existentes -->
+                        @if (question.options.length > 0) {
+                          <div class="options-list mb-2">
+                            @for (option of question.options; track option; let optIdx = $index) {
+                              <div class="option-item d-flex align-items-center gap-2 mb-2 p-2 bg-light rounded">
+                                <span class="badge bg-secondary">{{ optIdx + 1 }}</span>
+                                <span class="flex-grow-1">{{ option }}</span>
+                                <div class="btn-group btn-group-sm">
+                                  <button 
+                                    type="button"
+                                    (click)="moveOptionUpInQuestion(question, optIdx)" 
+                                    class="btn btn-outline-secondary"
+                                    [disabled]="optIdx === 0"
+                                    title="Subir">
+                                    <i class="bi bi-arrow-up"></i>
+                                  </button>
+                                  <button 
+                                    type="button"
+                                    (click)="moveOptionDownInQuestion(question, optIdx)" 
+                                    class="btn btn-outline-secondary"
+                                    [disabled]="optIdx === question.options.length - 1"
+                                    title="Bajar">
+                                    <i class="bi bi-arrow-down"></i>
+                                  </button>
+                                  <button 
+                                    type="button"
+                                    (click)="removeOptionFromQuestion(question, optIdx)" 
+                                    class="btn btn-outline-danger"
+                                    title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                  </button>
+                                </div>
+                              </div>
+                            }
+                          </div>
+                        }
+                        
+                        <!-- Input para agregar nueva opción -->
+                        <div class="input-group">
+                          <input 
+                            type="text" 
+                            class="form-control"
+                            [(ngModel)]="question.tempOption"
+                            (keypress)="onOptionKeyPress($event, question)"
+                            placeholder="Escribe una opción y presiona Enter o haz clic en Agregar">
+                          <button 
+                            type="button"
+                            class="btn btn-primary" 
+                            (click)="addOptionToQuestion(question)">
+                            <i class="bi bi-plus-lg me-1"></i>Agregar
+                          </button>
+                        </div>
+                        <small class="text-muted">Presiona Enter o haz clic en "Agregar" para añadir cada opción</small>
+                      </div>
+                    }
+
+                    <div class="d-flex gap-2">
+                      <button 
+                        (click)="saveQuestionEdit(question)" 
+                        class="btn btn-success btn-sm">
+                        <i class="bi bi-check-lg me-1"></i>Guardar
+                      </button>
+                      <button 
+                        (click)="cancelQuestionEdit(question)" 
+                        class="btn btn-secondary btn-sm">
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            No hay preguntas agregadas. Agrega la primera pregunta usando el formulario de abajo.
+          </div>
+        }
+
+        <!-- Formulario para agregar nueva pregunta -->
+        <div class="new-question-form border-top pt-4">
+          <h6 class="mb-3">
+            <i class="bi bi-plus-circle me-2"></i>Agregar Nueva Pregunta
+          </h6>
+          
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Título de la Pregunta</label>
+            <input 
+              type="text" 
+              class="form-control"
+              [(ngModel)]="newQuestion.title"
+              placeholder="¿Cuál es tu pregunta?">
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-8">
+              <label class="form-label fw-semibold">Tipo de Pregunta</label>
+              <select class="form-select" [(ngModel)]="newQuestion.type">
+                @for (type of questionTypes; track type.value) {
+                  <option [value]="type.value">{{ type.label }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">¿Obligatoria?</label>
+              <div class="form-check form-switch pt-2">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  [(ngModel)]="newQuestion.required"
+                  id="newRequired">
+                <label class="form-check-label" for="newRequired">
+                  Sí
+                </label>
+              </div>
+            </div>
+          </div>
+
+          @if (needsOptions(newQuestion.type)) {
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Opciones</label>
+              
+              <!-- Lista de opciones existentes -->
+              @if (newQuestion.options.length > 0) {
+                <div class="options-list mb-2">
+                  @for (option of newQuestion.options; track option; let optIdx = $index) {
+                    <div class="option-item d-flex align-items-center gap-2 mb-2 p-2 bg-light rounded">
+                      <span class="badge bg-secondary">{{ optIdx + 1 }}</span>
+                      <span class="flex-grow-1">{{ option }}</span>
+                      <div class="btn-group btn-group-sm">
+                        <button 
+                          type="button"
+                          (click)="moveOptionUpInNewQuestion(optIdx)" 
+                          class="btn btn-outline-secondary"
+                          [disabled]="optIdx === 0"
+                          title="Subir">
+                          <i class="bi bi-arrow-up"></i>
+                        </button>
+                        <button 
+                          type="button"
+                          (click)="moveOptionDownInNewQuestion(optIdx)" 
+                          class="btn btn-outline-secondary"
+                          [disabled]="optIdx === newQuestion.options.length - 1"
+                          title="Bajar">
+                          <i class="bi bi-arrow-down"></i>
+                        </button>
+                        <button 
+                          type="button"
+                          (click)="removeOptionFromNewQuestion(optIdx)" 
+                          class="btn btn-outline-danger"
+                          title="Eliminar">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+              
+              <!-- Input para agregar nueva opción -->
+              <div class="input-group">
+                <input 
+                  type="text" 
+                  class="form-control"
+                  [(ngModel)]="newQuestionOptionInput"
+                  (keypress)="onOptionKeyPress($event)"
+                  placeholder="Escribe una opción y presiona Enter o haz clic en Agregar">
+                <button 
+                  type="button"
+                  class="btn btn-primary" 
+                  (click)="addOptionToNewQuestion()">
+                  <i class="bi bi-plus-lg me-1"></i>Agregar
+                </button>
+              </div>
+              <small class="text-muted">Presiona Enter o haz clic en "Agregar" para añadir cada opción</small>
+            </div>
+          }
+
+          <button 
+            (click)="addQuestion()" 
+            class="btn btn-primary">
+            <i class="bi bi-plus-lg me-2"></i>Agregar Pregunta
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones Finales -->
+    <div class="d-flex justify-content-between align-items-center">
+      <button (click)="cancel()" class="btn btn-outline-secondary btn-lg" [disabled]="isSaving">
+        <i class="bi bi-x-circle me-2"></i>Cancelar
+      </button>
+      <button (click)="saveSurvey()" class="btn btn-success btn-lg" [disabled]="isSaving">
+        @if (isSaving) {
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          Guardando...
+        } @else {
+          <i class="bi bi-check-circle me-2"></i>
+          {{ isEditMode ? 'Actualizar Encuesta' : 'Guardar Encuesta' }}
+        }
+      </button>
+    </div>
+  </div>
+  }
+</div>

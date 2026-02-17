@@ -33,6 +33,20 @@ export const routes: Routes = [
     loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
   {
+    path: 'surveys',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'new',
+        loadComponent: () => import('./features/surveys/survey-form/survey-form.component').then(m => m.SurveyFormComponent)
+      },
+      {
+        path: 'edit/:id',
+        loadComponent: () => import('./features/surveys/survey-form/survey-form.component').then(m => m.SurveyFormComponent)
+      }
+    ]
+  },
+  {
     path: '**',
     redirectTo: '/auth/login'
   }

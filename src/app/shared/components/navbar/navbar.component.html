@@ -1,0 +1,20 @@
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold d-flex align-items-center" (click)="goToDashboard()" style="cursor: pointer;">
+      <i class="bi bi-clipboard-data me-2 fs-4"></i>
+      <span class="fs-4">Kata Encuestas</span>
+    </a>
+    @if (currentUser) {
+      <div class="d-flex align-items-center">
+        <span class="me-3 fw-medium navbar-text">
+          <i class="bi bi-person-circle me-1"></i>
+          Hola, {{ currentUser.name }}
+        </span>
+        <button (click)="logout()" class="btn btn-light btn-sm">
+          <i class="bi bi-box-arrow-right me-1"></i>
+          Cerrar sesión
+        </button>
+      </div>
+    }
+  </div>
+</nav>

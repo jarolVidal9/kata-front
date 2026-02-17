@@ -1,0 +1,26 @@
+nav.navbar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.navbar-brand {
+  transition: opacity 0.2s ease;
+  color: white !important;
+}
+
+.navbar-brand:hover {
+  opacity: 0.9;
+  color: white !important;
+}
+
+.navbar-text {
+  color: white !important;
+}
+
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}

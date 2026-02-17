@@ -1,0 +1,132 @@
+/* Formulario */
+.form-control:focus,
+.form-select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+}
+
+/* Items de preguntas */
+.question-item {
+  background-color: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.question-item:hover {
+  background-color: #e9ecef;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Formulario de edición de pregunta */
+.edit-question-form {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 2px solid #667eea;
+}
+
+/* Nueva pregunta */
+.new-question-form {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+/* Botones */
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-sm:hover {
+  transform: translateY(-1px);
+}
+
+/* Badges */
+.badge {
+  font-weight: 500;
+}
+
+/* Switch toggle */
+.form-check-input:checked {
+  background-color: #667eea;
+  border-color: #667eea;
+}
+
+/* Transiciones suaves */
+* {
+  transition: background-color 0.2s ease;
+}
+
+/* Opciones individuales */
+.options-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.option-item {
+  border: 1px solid #dee2e6;
+  transition: all 0.2s ease;
+}
+
+.option-item:hover {
+  background-color: #e9ecef !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.option-item .badge {
+  min-width: 30px;
+  text-align: center;
+}
+
+.option-item .flex-grow-1 {
+  word-break: break-word;
+}
+
+/* Input para agregar opciones */
+.input-group .btn-primary {
+  white-space: nowrap;
+}
+
+/* Scrollbar personalizado para lista de opciones */
+.options-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.options-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.options-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.options-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .question-item {
+    padding: 1rem !important;
+  }
+  
+  .d-flex.gap-1 {
+    flex-wrap: wrap;
+  }
+  
+  .option-item {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+  
+  .option-item .btn-group {
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+}
