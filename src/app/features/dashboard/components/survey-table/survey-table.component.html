@@ -1,0 +1,125 @@
+<div class="card shadow-sm border-0">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-bold">Mis Encuestas</h5>
+    <small class="text-muted">
+      Estado: {{ isLoading ? 'Cargando...' : 'Listo' }} | 
+      Encuestas: {{ surveys.length }}
+    </small>
+  </div>
+  <div class="card-body p-0">
+    @if (isLoading) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="text-muted mt-3">Cargando encuestas...</p>
+      </div>
+    } @else if (errorMessage) {
+      <div class="alert alert-danger m-3" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        {{ errorMessage }}
+        <button (click)="onReloadSurveys()" class="btn btn-sm btn-outline-danger ms-3">
+          Reintentar
+        </button>
+      </div>
+    } @else if (surveys.length === 0) {
+      <div class="text-center py-5">
+        <div class="display-1 mb-3 text-muted">📝</div>
+        <h5 class="text-muted">No hay encuestas creadas</h5>
+        <p class="text-muted">Crea tu primera encuesta para comenzar</p>
+        <button (click)="onCreateNewSurvey()" class="btn btn-primary mt-3">
+          Crear Primera Encuesta
+        </button>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="ps-4">Título</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Preguntas</th>
+              <th scope="col">Respuestas</th>
+              <th scope="col">Creador</th>
+              <th scope="col">Fecha de Creación</th>
+              <th scope="col">Expira</th>
+              <th scope="col" class="text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (survey of surveys; track survey.id) {
+              <tr>
+                <td class="ps-4">
+                  <div>
+                    <div class="fw-semibold">{{ survey.title }}</div>
+                    <small class="text-muted">{{ survey.description }}</small>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge {{ getStatusBadgeClass(survey.status) }}">
+                    {{ getStatusLabel(survey.status) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark border">
+                    <i class="bi bi-question-circle me-1"></i>
+                    {{ survey.questionsCount || survey.questions?.length || 0 }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge bg-light text-success border border-success">
+                    <i class="bi bi-chat-dots me-1"></i>
+                    {{ survey.responsesCount || 0 }}
+                  </span>
+                </td>
+                <td>
+                  <small class="text-muted">{{ survey.creator.name }}</small>
+                </td>
+                <td>
+                  <small class="text-muted">{{ survey.createdAt | date:'dd/MM/yyyy' }}</small>
+                </td>
+                <td>
+                  @if (survey.expiresAt) {
+                    <small class="text-muted">{{ survey.expiresAt | date:'dd/MM/yyyy' }}</small>
+                  } @else {
+                    <small class="text-muted">Sin expiración</small>
+                  }
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button 
+                      (click)="onCopyPublicLink(survey.id)" 
+                      class="btn btn-sm btn-outline-success"
+                      title="Copiar enlace público"
+                      [disabled]="survey.status !== 'PUBLISHED'">
+                      <i class="bi bi-link-45deg"></i>
+                    </button>
+                    <button 
+                      (click)="onEditSurvey(survey.id)" 
+                      class="btn btn-sm btn-outline-primary"
+                      title="Editar">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button 
+                      (click)="onViewResults(survey.id)" 
+                      class="btn btn-sm btn-outline-info"
+                      title="Ver resultados"
+                      [disabled]="!survey.responsesCount || survey.responsesCount === 0">
+                      <i class="bi bi-bar-chart"></i>
+                    </button>
+                    <button 
+                      (click)="onDeleteSurvey(survey.id)" 
+                      class="btn btn-sm btn-outline-danger"
+                      title="Eliminar">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

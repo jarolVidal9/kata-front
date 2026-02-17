@@ -9,11 +9,21 @@ import { User } from '../../core/models/auth.model';
 import { Survey } from '../../core/models/survey.model';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
+import { DashboardHeaderComponent } from './components/dashboard-header/dashboard-header.component';
+import { DashboardStatsComponent, DashboardStats } from './components/dashboard-stats/dashboard-stats.component';
+import { SurveyTableComponent } from './components/survey-table/survey-table.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, ModalComponent],
+  imports: [
+    CommonModule, 
+    NavbarComponent, 
+    ModalComponent,
+    DashboardHeaderComponent,
+    DashboardStatsComponent,
+    SurveyTableComponent
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -21,10 +31,12 @@ export class DashboardComponent implements OnInit {
   currentUser: User | null = null;
   
   // Estadísticas
-  totalSurveys: number = 0;
-  totalResponses: number = 0;
-  activeSurveys: number = 0;
-  draftSurveys: number = 0;
+  stats: DashboardStats = {
+    totalSurveys: 0,
+    totalResponses: 0,
+    activeSurveys: 0,
+    draftSurveys: 0
+  };
   
   // Listado de encuestas
   surveys: Survey[] = [];
@@ -72,28 +84,12 @@ export class DashboardComponent implements OnInit {
   }
 
   calculateStatistics(): void {
-    this.totalSurveys = this.surveys.length;
-    this.totalResponses = this.surveys.reduce((sum, survey) => sum + (survey.responsesCount || 0), 0);
-    this.activeSurveys = this.surveys.filter(s => s.status === 'PUBLISHED').length;
-    this.draftSurveys = this.surveys.filter(s => s.status === 'DRAFT').length;
-  }
-  
-  getStatusBadgeClass(status: string): string {
-    switch(status) {
-      case 'PUBLISHED': return 'bg-success';
-      case 'DRAFT': return 'bg-warning text-dark';
-      case 'CLOSED': return 'bg-secondary';
-      default: return 'bg-secondary';
-    }
-  }
-  
-  getStatusLabel(status: string): string {
-    switch(status) {
-      case 'PUBLISHED': return 'Publicada';
-      case 'DRAFT': return 'Borrador';
-      case 'CLOSED': return 'Cerrada';
-      default: return status;
-    }
+    this.stats = {
+      totalSurveys: this.surveys.length,
+      totalResponses: this.surveys.reduce((sum, survey) => sum + (survey.responsesCount || 0), 0),
+      activeSurveys: this.surveys.filter(s => s.status === 'PUBLISHED').length,
+      draftSurveys: this.surveys.filter(s => s.status === 'DRAFT').length
+    };
   }
   
   editSurvey(surveyId: number): void {

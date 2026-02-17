@@ -1,3 +1,4 @@
+/* Estilos generales del dashboard */
 .hover-card {
   transition: all 0.3s ease;
   cursor: pointer;
@@ -6,90 +7,4 @@
 .hover-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
-}
-
-/* Estadísticas */
-.stat-card {
-  transition: all 0.3s ease;
-  border-left: 4px solid transparent !important;
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
-}
-
-.stat-card-primary {
-  border-left-color: #0d6efd !important;
-}
-
-.stat-card-success {
-  border-left-color: #198754 !important;
-}
-
-.stat-card-info {
-  border-left-color: #0dcaf0 !important;
-}
-
-.stat-card-warning {
-  border-left-color: #ffc107 !important;
-}
-
-.stat-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  color: white;
-}
-
-/* Tabla de encuestas */
-.table-hover tbody tr {
-  transition: all 0.2s ease;
-}
-
-.table-hover tbody tr:hover {
-  background-color: rgba(102, 126, 234, 0.05);
-}
-
-/* Botones de acción */
-.btn-sm {
-  transition: all 0.2s ease;
-  min-width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem 0.5rem;
-}
-
-.btn-sm i {
-  font-size: 14px;
-  line-height: 1;
-}
-
-.btn-sm:hover {
-  transform: scale(1.08);
-}
-
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  align-items: center;
-  min-width: 120px;
-}
-
-/* Responsivo */
-@media (max-width: 768px) {
-  .table-responsive {
-    overflow-x: auto;
-  }
-  
-  .stat-card {
-    margin-bottom: 1rem;
-  }
 }

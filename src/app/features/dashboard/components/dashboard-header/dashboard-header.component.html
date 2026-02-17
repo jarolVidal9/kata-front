@@ -1,0 +1,11 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="mb-1">Dashboard de Encuestas</h2>
+    @if (currentUser) {
+      <p class="text-muted mb-0">Bienvenido, {{ currentUser.name }}</p>
+    }
+  </div>
+  <button (click)="onCreateSurvey()" class="btn btn-primary btn-lg">
+    <i class="bi bi-plus-circle me-2"></i>Nueva Encuesta
+  </button>
+</div>
