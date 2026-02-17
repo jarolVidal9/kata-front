@@ -1,0 +1,109 @@
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-gradient">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="card shadow-lg border-0">
+          <div class="card-body p-4">
+            <div class="text-center mb-4">
+              <h2 class="fw-bold">Crear Cuenta</h2>
+              <p class="text-muted">Completa el formulario para registrarte</p>
+            </div>
+
+            <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+              @if (errorMessage) {
+                <div class="alert alert-danger" role="alert">
+                  {{ errorMessage }}
+                </div>
+              }
+
+              <div class="mb-3">
+                <label for="name" class="form-label">Nombre completo</label>
+                <input
+                  id="name"
+                  type="text"
+                  class="form-control"
+                  [class.is-invalid]="registerForm.get('name')?.invalid && registerForm.get('name')?.touched"
+                  formControlName="name"
+                  placeholder="Juan Pérez"
+                />
+                @if (registerForm.get('name')?.invalid && registerForm.get('name')?.touched) {
+                  <div class="invalid-feedback d-block">
+                    {{ getErrorMessage('name') }}
+                  </div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  class="form-control"
+                  [class.is-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+                  formControlName="email"
+                  placeholder="tu@email.com"
+                />
+                @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+                  <div class="invalid-feedback d-block">
+                    {{ getErrorMessage('email') }}
+                  </div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <label for="password" class="form-label">Contraseña</label>
+                <input
+                  id="password"
+                  type="password"
+                  class="form-control"
+                  [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+                  formControlName="password"
+                  placeholder="••••••••"
+                />
+                @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+                  <div class="invalid-feedback d-block">
+                    {{ getErrorMessage('password') }}
+                  </div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <label for="confirmPassword" class="form-label">Confirmar contraseña</label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  class="form-control"
+                  [class.is-invalid]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
+                  formControlName="confirmPassword"
+                  placeholder="••••••••"
+                />
+                @if (registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched) {
+                  <div class="invalid-feedback d-block">
+                    {{ getErrorMessage('confirmPassword') }}
+                  </div>
+                }
+              </div>
+
+              <button
+                type="submit"
+                class="btn btn-primary w-100 mb-3"
+                [disabled]="isLoading"
+              >
+                @if (isLoading) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                  <span>Cargando...</span>
+                } @else {
+                  <span>Registrarse</span>
+                }
+              </button>
+
+              <div class="text-center">
+                <p class="mb-0">¿Ya tienes cuenta? <a routerLink="/auth/login" class="text-decoration-none">Inicia sesión</a></p>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
