@@ -1,0 +1,218 @@
+<div class="min-vh-100 bg-light">
+  <app-navbar></app-navbar>
+
+  <div class="container mt-4 pb-5">
+    <!-- Header -->
+    <div class="mb-4">
+      <a (click)="goBack()" class="text-muted text-decoration-none cursor-pointer mb-3 d-inline-block">
+        <i class="bi bi-arrow-left me-1"></i> Volver al dashboard
+      </a>
+      
+      @if (analytics) {
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h2 class="mb-1">{{ analytics.survey.title }}</h2>
+            <p class="text-muted mb-0">
+              <span class="badge {{ analytics.survey.status === 'PUBLISHED' ? 'bg-success' : 'bg-secondary' }} me-2">
+                {{ analytics.survey.status === 'PUBLISHED' ? 'Publicada' : analytics.survey.status }}
+              </span>
+              <i class="bi bi-people me-1"></i>
+              {{ analytics.totalResponses }} {{ analytics.totalResponses === 1 ? 'respuesta' : 'respuestas' }}
+            </p>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Loading State -->
+    @if (isLoading) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="text-muted mt-3">Cargando datos...</p>
+      </div>
+    }
+
+    <!-- Error State -->
+    @else if (errorMessage) {
+      <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        {{ errorMessage }}
+      </div>
+    }
+
+    <!-- No Responses -->
+    @else if (analytics && analytics.totalResponses === 0) {
+      <div class="card shadow-sm border-0 text-center p-5">
+        <div class="display-1 mb-3">📊</div>
+        <h4 class="mb-2">Sin respuestas aún</h4>
+        <p class="text-muted">
+          Esta encuesta aún no ha recibido respuestas.<br>
+          Comparte el enlace público para comenzar a recibir datos.
+        </p>
+      </div>
+    }
+
+    <!-- Content -->
+    @else if (analytics) {
+      <!-- Tabs -->
+      <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+          <a 
+            class="nav-link" 
+            [class.active]="activeView === 'analytics'"
+            (click)="switchView('analytics')"
+            style="cursor: pointer;">
+            <i class="bi bi-bar-chart me-2"></i>Estadísticas
+          </a>
+        </li>
+        <li class="nav-item">
+          <a 
+            class="nav-link" 
+            [class.active]="activeView === 'responses'"
+            (click)="switchView('responses')"
+            style="cursor: pointer;">
+            <i class="bi bi-list-ul me-2"></i>Respuestas Individuales ({{ analytics.totalResponses }})
+          </a>
+        </li>
+      </ul>
+
+      <!-- Analytics View -->
+      @if (activeView === 'analytics') {
+        <div class="analytics-view">
+          @for (question of analytics.analytics; track question.questionId; let i = $index) {
+            <div class="card shadow-sm border-0 mb-4">
+              <div class="card-header bg-white py-3">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <span class="badge bg-primary me-2">Pregunta {{ i + 1 }}</span>
+                    <span class="badge bg-secondary">{{ getQuestionTypeLabel(question.questionType) }}</span>
+                  </div>
+                  <span class="text-muted">{{ question.totalAnswers }} {{ question.totalAnswers === 1 ? 'respuesta' : 'respuestas' }}</span>
+                </div>
+                <h5 class="mb-0 mt-2">{{ question.questionTitle }}</h5>
+              </div>
+
+              <div class="card-body p-4">
+                <!-- Preguntas con opciones: mostrar gráfico de barras -->
+                @if (hasOptions(question.questionType)) {
+                  @if (question.totalAnswers > 0) {
+                    <div class="options-chart">
+                      @for (optionData of processOptionsData(question); track optionData.option) {
+                        <div class="option-bar mb-3">
+                          <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-semibold">{{ optionData.option }}</span>
+                            <div class="text-end">
+                              <span class="badge bg-primary me-2">{{ optionData.count }}</span>
+                              <span class="text-muted">{{ optionData.percentage | number:'1.1-1' }}%</span>
+                            </div>
+                          </div>
+                          <div class="progress" style="height: 25px;">
+                            <div 
+                              class="progress-bar bg-gradient" 
+                              role="progressbar" 
+                              [style.width]="getBarWidth(optionData.percentage)"
+                              [attr.aria-valuenow]="optionData.percentage"
+                              aria-valuemin="0" 
+                              aria-valuemax="100">
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <p class="text-muted text-center py-3">Sin respuestas</p>
+                  }
+                }
+
+                <!-- Preguntas de texto: mostrar lista de respuestas -->
+                @else {
+                  @if (question.answers.length > 0) {
+                    <div class="text-responses">
+                      @for (answer of question.answers; track answer; let answerIdx = $index) {
+                        <div class="text-answer p-3 mb-2 bg-light rounded">
+                          <div class="d-flex align-items-start">
+                            <span class="badge bg-secondary me-2">{{ answerIdx + 1 }}</span>
+                            <div class="flex-grow-1">
+                              <p class="mb-0" [class.text-break]="question.questionType === 'TEXTAREA'">
+                                {{ answer }}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <p class="text-muted text-center py-3">Sin respuestas</p>
+                  }
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Responses View -->
+      @if (activeView === 'responses') {
+        @if (isLoading) {
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+        } @else if (responses.length === 0) {
+          <div class="card shadow-sm border-0 text-center p-5">
+            <p class="text-muted mb-0">No hay respuestas para mostrar</p>
+          </div>
+        } @else {
+          <div class="responses-list">
+            @for (response of responses; track response.id; let respIdx = $index) {
+              <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header bg-light py-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="mb-1">
+                        <i class="bi bi-person-circle me-2"></i>
+                        {{ response.respondentName || 'Anónimo' }}
+                        @if (response.respondentEmail) {
+                          <small class="text-muted ms-2">({{ response.respondentEmail }})</small>
+                        }
+                      </h6>
+                      <small class="text-muted">
+                        <i class="bi bi-calendar me-1"></i>
+                        {{ response.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                      </small>
+                    </div>
+                    <button 
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="deleteResponse(response.id)"
+                      title="Eliminar respuesta">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  @for (answer of response.answers; track answer.id) {
+                    <div class="mb-3 pb-3 border-bottom">
+                      <p class="text-muted mb-1 small">{{ answer.question.title }}</p>
+                      @if (answer.question.type === 'CHECKBOX') {
+                        <div class="d-flex flex-wrap gap-1">
+                          @for (option of parseCheckboxAnswer(answer.value); track option) {
+                            <span class="badge bg-primary">{{ option }}</span>
+                          }
+                        </div>
+                      } @else {
+                        <p class="mb-0 fw-semibold">{{ answer.value }}</p>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+    }
+  </div>
+</div>

@@ -173,6 +173,13 @@
                     <td>
                       <div class="action-buttons">
                         <button 
+                          (click)="copyPublicLink(survey.id)" 
+                          class="btn btn-sm btn-outline-success"
+                          title="Copiar enlace público"
+                          [disabled]="survey.status !== 'PUBLISHED'">
+                          <i class="bi bi-link-45deg"></i>
+                        </button>
+                        <button 
                           (click)="editSurvey(survey.id)" 
                           class="btn btn-sm btn-outline-primary"
                           title="Editar">

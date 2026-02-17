@@ -1,0 +1,150 @@
+/* Cursor */
+.cursor-pointer {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.cursor-pointer:hover {
+  color: #667eea !important;
+}
+
+/* Tabs */
+.nav-tabs .nav-link {
+  color: #6c757d;
+  border: none;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+  color: #667eea;
+  border-bottom-color: #667eea;
+}
+
+.nav-tabs .nav-link.active {
+  color: #667eea;
+  background-color: transparent;
+  border-bottom-color: #667eea;
+  font-weight: 600;
+}
+
+/* Cards */
+.card-header {
+  border-bottom: 2px solid #f0f0f0;
+}
+
+/* Gráficos de barras */
+.options-chart {
+  padding: 0.5rem 0;
+}
+
+.option-bar {
+  animation: fadeInUp 0.3s ease;
+}
+
+.progress {
+  background-color: #e9ecef;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.progress-bar.bg-gradient {
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.6s ease;
+}
+
+.option-bar:hover .progress-bar {
+  opacity: 0.9;
+}
+
+/* Respuestas de texto */
+.text-answer {
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s ease;
+  animation: fadeIn 0.3s ease;
+}
+
+.text-answer:hover {
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+}
+
+/* Respuestas individuales */
+.responses-list .card {
+  transition: all 0.2s ease;
+  animation: fadeInUp 0.3s ease;
+}
+
+.responses-list .card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Badges */
+.badge {
+  font-weight: 500;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Botones */
+.btn-outline-danger:hover {
+  transform: scale(1.05);
+}
+
+/* Empty states */
+.display-1 {
+  font-size: 4rem;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .option-bar .d-flex {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.5rem;
+  }
+
+  .responses-list .card-header .d-flex {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.5rem;
+  }
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

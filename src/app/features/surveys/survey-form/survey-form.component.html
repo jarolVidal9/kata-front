@@ -1,28 +1,6 @@
 <div class="min-vh-100 bg-light">
   <app-navbar></app-navbar>
   
-  <div class="bg-white py-3 shadow-sm border-bottom">
-    <div class="container">
-      <div class="d-flex align-items-center">
-        <button (click)="cancel()" class="btn btn-outline-secondary btn-sm me-3" [disabled]="isSaving">
-          <i class="bi bi-arrow-left me-1"></i> Volver
-        </button>
-        <h2 class="mb-0">
-          <i class="bi bi-clipboard-check me-2 text-primary"></i>
-          {{ isEditMode ? 'Editar Encuesta' : 'Nueva Encuesta' }}
-        </h2>
-        @if (isLoading) {
-          <span class="ms-3">
-            <div class="spinner-border spinner-border-sm text-primary" role="status">
-              <span class="visually-hidden">Cargando...</span>
-            </div>
-            <span class="ms-2 text-muted">Cargando...</span>
-          </span>
-        }
-      </div>
-    </div>
-  </div>
-
   @if (isLoading) {
     <div class="container mt-5 text-center">
       <div class="spinner-border text-primary" role="status">
@@ -32,11 +10,18 @@
     </div>
   } @else {
   <div class="container mt-4 pb-5">
+    <!-- Link simple para volver -->
+    <div class="mb-3">
+      <a (click)="cancel()" class="text-muted text-decoration-none cursor-pointer" style="cursor: pointer;">
+        <i class="bi bi-arrow-left me-1"></i> Volver al dashboard
+      </a>
+    </div>
+
     <!-- Información Básica de la Encuesta -->
     <div class="card shadow-sm border-0 mb-4">
-      <div class="card-header bg-white py-3">
-        <h5 class="mb-0 fw-bold">
-          <i class="bi bi-info-circle me-2"></i>Información General
+      <div class="card-header bg-white py-3 border-bottom">
+        <h5 class="mb-0">
+          {{ isEditMode ? 'Editar Encuesta' : 'Nueva Encuesta' }}
         </h5>
       </div>
       <div class="card-body p-4">
@@ -101,10 +86,8 @@
 
     <!-- Constructor de Preguntas -->
     <div class="card shadow-sm border-0 mb-4">
-      <div class="card-header bg-white py-3">
-        <h5 class="mb-0 fw-bold">
-          <i class="bi bi-list-check me-2"></i>Preguntas de la Encuesta
-        </h5>
+      <div class="card-header bg-white py-3 border-bottom">
+        <h5 class="mb-0">Preguntas</h5>
       </div>
       <div class="card-body p-4">
         <!-- Listado de preguntas existentes -->
@@ -284,9 +267,7 @@
 
         <!-- Formulario para agregar nueva pregunta -->
         <div class="new-question-form border-top pt-4">
-          <h6 class="mb-3">
-            <i class="bi bi-plus-circle me-2"></i>Agregar Nueva Pregunta
-          </h6>
+          <h6 class="mb-3 text-muted">Agregar Pregunta</h6>
           
           <div class="mb-3">
             <label class="form-label fw-semibold">Título de la Pregunta</label>

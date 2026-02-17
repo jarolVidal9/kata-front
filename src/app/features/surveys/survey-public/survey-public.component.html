@@ -1,0 +1,213 @@
+<div class="min-vh-100 bg-light">
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="container mt-5 text-center">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-3">Cargando encuesta...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @else if (errorMessage && !survey) {
+    <div class="container mt-5">
+      <div class="alert alert-danger text-center">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        {{ errorMessage }}
+      </div>
+      <div class="text-center mt-3">
+        <button class="btn btn-primary" (click)="router.navigate(['/'])">
+          Ir al inicio
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Success State -->
+  @else if (isSubmitted) {
+    <div class="container mt-5">
+      <div class="card shadow-sm border-0 text-center p-5">
+        <div class="mb-4">
+          <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+        </div>
+        <h2 class="mb-3">¡Gracias por tu respuesta!</h2>
+        <p class="text-muted mb-4">
+          Tu respuesta ha sido enviada exitosamente.
+        </p>
+        <div>
+          <button class="btn btn-outline-primary" (click)="resetForm()">
+            Responder nuevamente
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Survey Form -->
+  @else if (survey) {
+    <div class="container mt-4 pb-5">
+      <div class="card shadow-sm border-0 mb-4">
+        <!-- Header -->
+        <div class="card-header bg-gradient text-white py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;">
+          <h2 class="mb-2 text-white">{{ survey.title }}</h2>
+          @if (survey.description) {
+            <p class="mb-0 text-white" style="opacity: 0.95;">{{ survey.description }}</p>
+          }
+        </div>
+
+        <!-- Información del encuestado (opcional) -->
+        <div class="card-body p-4">
+          <div class="mb-4 pb-4 border-bottom">
+            <h5 class="mb-3">Información (opcional)</h5>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="respondentName" class="form-label">Nombre</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="respondentName"
+                  [(ngModel)]="respondentName"
+                  placeholder="Tu nombre">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="respondentEmail" class="form-label">Email</label>
+                <input 
+                  type="email" 
+                  class="form-control" 
+                  id="respondentEmail"
+                  [(ngModel)]="respondentEmail"
+                  placeholder="tu@email.com">
+              </div>
+            </div>
+          </div>
+
+          <!-- Preguntas -->
+          <div class="questions-section">
+            @for (qa of questionAnswers; track qa.questionId; let i = $index) {
+              <div class="question-item mb-4 p-4 bg-light rounded">
+                <div class="d-flex align-items-start mb-3">
+                  <span class="badge bg-primary me-2">{{ i + 1 }}</span>
+                  <div class="flex-grow-1">
+                    <h6 class="mb-1">
+                      {{ qa.questionTitle }}
+                      @if (qa.required) {
+                        <span class="text-danger">*</span>
+                      }
+                    </h6>
+                  </div>
+                </div>
+
+                <!-- TEXT Input -->
+                @if (qa.questionType === 'TEXT') {
+                  <input 
+                    type="text" 
+                    class="form-control"
+                    [(ngModel)]="qa.textValue"
+                    [required]="qa.required"
+                    placeholder="Escribe tu respuesta">
+                }
+
+                <!-- TEXTAREA Input -->
+                @if (qa.questionType === 'TEXTAREA') {
+                  <textarea 
+                    class="form-control"
+                    rows="4"
+                    [(ngModel)]="qa.textValue"
+                    [required]="qa.required"
+                    placeholder="Escribe tu respuesta"></textarea>
+                }
+
+                <!-- RADIO Options -->
+                @if (qa.questionType === 'RADIO' && qa.options) {
+                  <div class="options-list">
+                    @for (option of qa.options; track option) {
+                      <div class="form-check mb-2">
+                        <input 
+                          class="form-check-input" 
+                          type="radio"
+                          [name]="'question_' + qa.questionId"
+                          [id]="'radio_' + qa.questionId + '_' + option"
+                          [value]="option"
+                          [(ngModel)]="qa.selectedOption"
+                          [required]="qa.required">
+                        <label 
+                          class="form-check-label" 
+                          [for]="'radio_' + qa.questionId + '_' + option">
+                          {{ option }}
+                        </label>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- CHECKBOX Options -->
+                @if (qa.questionType === 'CHECKBOX' && qa.options) {
+                  <div class="options-list">
+                    @for (option of qa.options; track option) {
+                      <div class="form-check mb-2">
+                        <input 
+                          class="form-check-input" 
+                          type="checkbox"
+                          [id]="'checkbox_' + qa.questionId + '_' + option"
+                          [checked]="isCheckboxChecked(qa, option)"
+                          (change)="onCheckboxChange(qa, option, $event)">
+                        <label 
+                          class="form-check-label" 
+                          [for]="'checkbox_' + qa.questionId + '_' + option">
+                          {{ option }}
+                        </label>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- SELECT Dropdown -->
+                @if (qa.questionType === 'SELECT' && qa.options) {
+                  <select 
+                    class="form-select"
+                    [(ngModel)]="qa.selectedOption"
+                    [required]="qa.required">
+                    <option value="">Selecciona una opción</option>
+                    @for (option of qa.options; track option) {
+                      <option [value]="option">{{ option }}</option>
+                    }
+                  </select>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Error Message -->
+          @if (errorMessage) {
+            <div class="alert alert-danger mb-4">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              {{ errorMessage }}
+            </div>
+          }
+
+          <!-- Submit Button -->
+          <div class="text-center mt-4">
+            <button 
+              class="btn btn-primary btn-lg px-5"
+              (click)="submitResponse()"
+              [disabled]="isSubmitting">
+              @if (isSubmitting) {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                Enviando...
+              } @else {
+                <i class="bi bi-send me-2"></i>
+                Enviar Respuestas
+              }
+            </button>
+          </div>
+
+          <p class="text-center text-muted mt-3 small">
+            <i class="bi bi-lock me-1"></i>
+            Tus respuestas son confidenciales
+          </p>
+        </div>
+      </div>
+    </div>
+  }
+</div>

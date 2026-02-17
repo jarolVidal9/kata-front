@@ -5,6 +5,27 @@
   box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
 }
 
+/* Link de volver */
+.cursor-pointer {
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.cursor-pointer:hover {
+  color: #667eea !important;
+  transform: translateX(-2px);
+}
+
+/* Card headers más limpios */
+.card-header {
+  background-color: #fafbfc !important;
+}
+
+.card-header h5 {
+  color: #333;
+  font-weight: 500;
+}
+
 /* Items de preguntas */
 .question-item {
   background-color: #f8f9fa;

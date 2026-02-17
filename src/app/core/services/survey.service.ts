@@ -25,10 +25,17 @@ export class SurveyService {
   }
 
   /**
-   * Obtener una encuesta por ID
+   * Obtener una encuesta por ID (requiere autenticación)
    */
   getSurveyById(id: number): Observable<Survey> {
     return this.http.get<Survey>(`${this.API_URL}/${id}`);
+  }
+
+  /**
+   * Obtener una encuesta pública (sin autenticación)
+   */
+  getPublicSurvey(id: number): Observable<Survey> {
+    return this.http.get<Survey>(`${this.API_URL}/public/${id}`);
   }
 
   /**

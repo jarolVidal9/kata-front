@@ -33,6 +33,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
   {
+    path: 'survey/:id',
+    loadComponent: () => import('./features/surveys/survey-public/survey-public.component').then(m => m.SurveyPublicComponent)
+  },
+  {
     path: 'surveys',
     canActivate: [authGuard],
     children: [
@@ -43,6 +47,10 @@ export const routes: Routes = [
       {
         path: 'edit/:id',
         loadComponent: () => import('./features/surveys/survey-form/survey-form.component').then(m => m.SurveyFormComponent)
+      },
+      {
+        path: 'results/:id',
+        loadComponent: () => import('./features/surveys/survey-results/survey-results.component').then(m => m.SurveyResultsComponent)
       }
     ]
   },

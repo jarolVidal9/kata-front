@@ -106,13 +106,24 @@ export class DashboardComponent implements OnInit {
   
   editSurvey(surveyId: number): void {
     console.log('Editar encuesta:', surveyId);
-    // TODO: Navegar a formulario de edición
     this.router.navigate(['/surveys/edit', surveyId]);
+  }
+  
+  copyPublicLink(surveyId: number): void {
+    const publicUrl = `${window.location.origin}/survey/${surveyId}`;
+    
+    // Copiar al portapapeles
+    navigator.clipboard.writeText(publicUrl).then(() => {
+      alert(`Enlace copiado al portapapeles:\n${publicUrl}\n\nComparte este enlace para que otros respondan la encuesta.`);
+    }).catch(err => {
+      console.error('Error al copiar al portapapeles:', err);
+      // Fallback: mostrar el enlace para que el usuario lo copie manualmente
+      alert(`Copia este enlace:\n${publicUrl}`);
+    });
   }
   
   viewResults(surveyId: number): void {
     console.log('Ver resultados:', surveyId);
-    // TODO: Navegar a resultados
     this.router.navigate(['/surveys/results', surveyId]);
   }
   
