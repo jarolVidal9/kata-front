@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
+import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { ResponseService } from '../../../core/services/response.service';
+import { ModalService } from '../../../shared/services/modal.service';
 import { SurveyAnalytics, QuestionAnalytics, OptionCount, ResponseDetail } from '../../../core/models/analytics.model';
 
 /**
@@ -13,7 +15,7 @@ import { SurveyAnalytics, QuestionAnalytics, OptionCount, ResponseDetail } from 
 @Component({
   selector: 'app-survey-results',
   standalone: true,
-  imports: [CommonModule, NavbarComponent],
+  imports: [CommonModule, NavbarComponent, ModalComponent],
   templateUrl: './survey-results.component.html',
   styleUrl: './survey-results.component.css'
 })
@@ -32,6 +34,7 @@ export class SurveyResultsComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private responseService: ResponseService,
+    private modalService: ModalService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -63,10 +66,8 @@ export class SurveyResultsComponent implements OnInit {
       .subscribe({
         next: (data) => {
           this.analytics = data;
-          console.log('Analytics cargados:', data);
         },
         error: (error) => {
-          console.error('Error al cargar analytics:', error);
           this.errorMessage = 'Error al cargar las estadísticas';
         }
       });
@@ -91,10 +92,8 @@ export class SurveyResultsComponent implements OnInit {
       .subscribe({
         next: (data) => {
           this.responses = data;
-          console.log('Respuestas cargadas:', data);
         },
         error: (error) => {
-          console.error('Error al cargar respuestas:', error);
           this.errorMessage = 'Error al cargar las respuestas';
         }
       });
@@ -204,12 +203,19 @@ export class SurveyResultsComponent implements OnInit {
   /**
    * Elimina una respuesta individual
    */
-  deleteResponse(responseId: number): void {
-    if (!confirm('¿Estás seguro de eliminar esta respuesta?')) return;
+  async deleteResponse(responseId: number): Promise<void> {
+    const confirmed = await this.modalService.showConfirm(
+      'Eliminar respuesta',
+      '¿Estás seguro de eliminar esta respuesta? Esta acción no se puede deshacer.'
+    );
+    if (!confirmed) return;
 
     this.responseService.deleteResponse(responseId).subscribe({
-      next: () => {
-        console.log('Respuesta eliminada');
+      next: async () => {
+        await this.modalService.showSuccess(
+          'Respuesta eliminada',
+          'La respuesta ha sido eliminada exitosamente.'
+        );
         // Recargar datos
         if (this.activeView === 'analytics') {
           this.loadAnalytics();
@@ -217,9 +223,11 @@ export class SurveyResultsComponent implements OnInit {
           this.loadResponses();
         }
       },
-      error: (error) => {
-        console.error('Error al eliminar respuesta:', error);
-        alert('Error al eliminar la respuesta');
+      error: async (error) => {
+        await this.modalService.showError(
+          'Error al eliminar',
+          'No se pudo eliminar la respuesta. Por favor, intenta nuevamente.'
+        );
       }
     });
   }

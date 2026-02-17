@@ -1,0 +1,39 @@
+@if (modal) {
+  <div class="modal fade show d-block" tabindex="-1" role="dialog" style="background-color: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content" [class]="getHeaderClass()">
+        <div class="modal-header border-0 pb-0">
+          <div class="d-flex align-items-center w-100">
+            <i class="modal-icon me-3" [class]="getIconClass()"></i>
+            <h5 class="modal-title mb-0">{{ modal.title }}</h5>
+          </div>
+        </div>
+        
+        <div class="modal-body pt-2">
+          <p class="mb-0 text-muted">{{ modal.message }}</p>
+        </div>
+        
+        <div class="modal-footer border-0">
+          @if (modal.type === 'confirm' && modal.cancelText) {
+            <button 
+              type="button" 
+              class="btn btn-secondary"
+              (click)="onCancel()">
+              {{ modal.cancelText }}
+            </button>
+          }
+          <button 
+            type="button" 
+            class="btn"
+            [class.btn-primary]="modal.type === 'info' || modal.type === 'confirm'"
+            [class.btn-success]="modal.type === 'success'"
+            [class.btn-danger]="modal.type === 'error'"
+            [class.btn-warning]="modal.type === 'warning'"
+            (click)="onConfirm()">
+            {{ modal.confirmText || 'Aceptar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

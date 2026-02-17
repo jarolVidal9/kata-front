@@ -4,14 +4,16 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { SurveyService } from '../../core/services/survey.service';
+import { ModalService } from '../../shared/services/modal.service';
 import { User } from '../../core/models/auth.model';
 import { Survey } from '../../core/models/survey.model';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
+import { ModalComponent } from '../../shared/components/modal/modal.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, NavbarComponent],
+  imports: [CommonModule, NavbarComponent, ModalComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -32,6 +34,7 @@ export class DashboardComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private surveyService: SurveyService,
+    private modalService: ModalService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -50,30 +53,19 @@ export class DashboardComponent implements OnInit {
     this.errorMessage = '';
     this.surveys = [];
     
-    console.log('=== Iniciando carga de encuestas ===');
-    console.log('isLoading:', this.isLoading);
-    
     this.surveyService.getAllSurveys()
       .pipe(
         finalize(() => {
           this.isLoading = false;
-          console.log('=== Finalize ejecutado, isLoading:', this.isLoading);
           this.cdr.detectChanges();
         })
       )
       .subscribe({
         next: (surveys) => {
-          console.log('=== Respuesta recibida ===');
-          console.log('Encuestas recibidas:', surveys);
-          console.log('Cantidad:', surveys.length);
-          
           this.surveys = surveys;
           this.calculateStatistics();
-          
-          console.log('surveys.length:', this.surveys.length);
         },
-        error: (error) => {
-          console.error('=== Error al cargar las encuestas ===', error);
+        error: () => {
           this.errorMessage = 'Error al cargar las encuestas. Por favor, intenta nuevamente.';
         }
       });
@@ -105,45 +97,56 @@ export class DashboardComponent implements OnInit {
   }
   
   editSurvey(surveyId: number): void {
-    console.log('Editar encuesta:', surveyId);
     this.router.navigate(['/surveys/edit', surveyId]);
   }
   
-  copyPublicLink(surveyId: number): void {
+  async copyPublicLink(surveyId: number): Promise<void> {
     const publicUrl = `${window.location.origin}/survey/${surveyId}`;
     
-    // Copiar al portapapeles
-    navigator.clipboard.writeText(publicUrl).then(() => {
-      alert(`Enlace copiado al portapapeles:\n${publicUrl}\n\nComparte este enlace para que otros respondan la encuesta.`);
-    }).catch(err => {
-      console.error('Error al copiar al portapapeles:', err);
-      // Fallback: mostrar el enlace para que el usuario lo copie manualmente
-      alert(`Copia este enlace:\n${publicUrl}`);
-    });
+    try {
+      await navigator.clipboard.writeText(publicUrl);
+      await this.modalService.showSuccess(
+        'Enlace Copiado',
+        `El enlace ha sido copiado al portapapeles:\n${publicUrl}\n\nCompártelo para que otros respondan la encuesta.`
+      );
+    } catch {
+      await this.modalService.showInfo(
+        'Enlace Público',
+        `Copia este enlace:\n${publicUrl}`
+      );
+    }
   }
   
   viewResults(surveyId: number): void {
-    console.log('Ver resultados:', surveyId);
     this.router.navigate(['/surveys/results', surveyId]);
   }
   
   createNewSurvey(): void {
-    console.log('Crear nueva encuesta');
-    // TODO: Navegar a formulario de creación
     this.router.navigate(['/surveys/new']);
   }
   
-  deleteSurvey(surveyId: number): void {
-    if (confirm('¿Estás seguro de que deseas eliminar esta encuesta?')) {
+  async deleteSurvey(surveyId: number): Promise<void> {
+    const confirmed = await this.modalService.showConfirm(
+      'Eliminar Encuesta',
+      '¿Estás seguro de que deseas eliminar esta encuesta? Esta acción no se puede deshacer.',
+      'Eliminar',
+      'Cancelar'
+    );
+
+    if (confirmed) {
       this.surveyService.deleteSurvey(surveyId).subscribe({
-        next: () => {
-          console.log('Encuesta eliminada exitosamente');
-          // Recargar la lista de encuestas
+        next: async () => {
+          await this.modalService.showSuccess(
+            'Encuesta Eliminada',
+            'La encuesta ha sido eliminada exitosamente.'
+          );
           this.loadSurveys();
         },
-        error: (error) => {
-          console.error('Error al eliminar la encuesta:', error);
-          alert('Error al eliminar la encuesta. Por favor, intenta nuevamente.');
+        error: async () => {
+          await this.modalService.showError(
+            'Error',
+            'No se pudo eliminar la encuesta. Por favor, intenta nuevamente.'
+          );
         }
       });
     }

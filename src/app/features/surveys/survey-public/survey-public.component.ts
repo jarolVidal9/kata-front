@@ -73,7 +73,6 @@ export class SurveyPublicComponent implements OnInit {
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('Error al cargar la encuesta:', error);
           this.errorMessage = this.getErrorMessage(error);
         }
       });
@@ -251,11 +250,9 @@ export class SurveyPublicComponent implements OnInit {
       )
       .subscribe({
         next: (response) => {
-          console.log('Respuesta enviada exitosamente:', response);
           this.isSubmitted = true;
         },
         error: (error) => {
-          console.error('Error al enviar la respuesta:', error);
           this.errorMessage = this.getErrorMessage(error);
         }
       });

@@ -1,0 +1,66 @@
+/* Modal personalizado con Bootstrap */
+.modal.show {
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-dialog {
+  animation: slideDown 0.3s ease;
+}
+
+/* Borde superior de color según tipo */
+.modal-content {
+  border-top: 4px solid;
+}
+
+.modal-content.border-primary {
+  border-top-color: #667eea;
+}
+
+.modal-content.border-success {
+  border-top-color: #28a745;
+}
+
+.modal-content.border-danger {
+  border-top-color: #dc3545;
+}
+
+.modal-content.border-warning {
+  border-top-color: #ffc107;
+}
+
+/* Icono */
+.modal-icon {
+  font-size: 2rem;
+}
+
+/* Botones con hover effect */
+.modal-footer .btn {
+  min-width: 100px;
+  transition: all 0.2s ease;
+}
+
+.modal-footer .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

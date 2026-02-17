@@ -26,7 +26,7 @@
       </div>
       <div class="card-body p-4">
         <div class="row">
-          <div class="col-md-8">
+          <div class="col-12 col-md-8">
             <div class="mb-3">
               <label for="title" class="form-label fw-semibold">
                 Título de la Encuesta <span class="text-danger">*</span>
@@ -36,6 +36,7 @@
                 class="form-control form-control-lg" 
                 id="title"
                 [(ngModel)]="survey.title"
+                (ngModelChange)="markAsChanged()"
                 placeholder="Ej: Encuesta de Satisfacción del Cliente"
                 maxlength="255">
             </div>
@@ -48,12 +49,13 @@
                 class="form-control" 
                 id="description"
                 [(ngModel)]="survey.description"
+                (ngModelChange)="markAsChanged()"
                 rows="3"
                 placeholder="Describe el propósito de esta encuesta..."></textarea>
             </div>
           </div>
 
-          <div class="col-md-4">
+          <div class="col-12 col-md-4">
             <div class="mb-3">
               <label for="status" class="form-label fw-semibold">
                 Estado <span class="text-danger">*</span>
@@ -61,7 +63,8 @@
               <select 
                 class="form-select" 
                 id="status"
-                [(ngModel)]="survey.status">
+                [(ngModel)]="survey.status"
+                (ngModelChange)="markAsChanged()">
                 @for (status of statusOptions; track status.value) {
                   <option [value]="status.value">{{ status.label }}</option>
                 }
@@ -76,7 +79,8 @@
                 type="date" 
                 class="form-control" 
                 id="expiresAt"
-                [(ngModel)]="survey.expiresAt">
+                [(ngModel)]="survey.expiresAt"
+                (ngModelChange)="markAsChanged()">
               <small class="text-muted">Dejar vacío para que no expire</small>
             </div>
           </div>
@@ -389,3 +393,6 @@
   </div>
   }
 </div>
+
+<app-modal></app-modal>
+

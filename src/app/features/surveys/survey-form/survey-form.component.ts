@@ -4,7 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
+import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { SurveyService } from '../../../core/services/survey.service';
+import { ModalService } from '../../../shared/services/modal.service';
 import { Survey as SurveyModel, CreateSurveyRequest } from '../../../core/models/survey.model';
 
 interface Question {
@@ -30,7 +32,7 @@ interface Survey {
 @Component({
   selector: 'app-survey-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, ModalComponent],
   templateUrl: './survey-form.component.html',
   styleUrl: './survey-form.component.css'
 })
@@ -39,6 +41,8 @@ export class SurveyFormComponent implements OnInit {
   surveyId: number | null = null;
   isLoading: boolean = false;
   isSaving: boolean = false;
+  hasUnsavedChanges: boolean = false;
+  initialSurveyState: string = '';
 
   survey: Survey = {
     title: '',
@@ -72,6 +76,7 @@ export class SurveyFormComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private surveyService: SurveyService,
+    private modalService: ModalService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -82,26 +87,25 @@ export class SurveyFormComponent implements OnInit {
         this.isEditMode = true;
         this.surveyId = +params['id'];
         this.loadSurvey(this.surveyId);
+      } else {
+        // Capturar estado inicial para nuevas encuestas
+        this.captureInitialState();
       }
     });
   }
 
-  loadSurvey(id: number): void {
+  async loadSurvey(id: number): Promise<void> {
     this.isLoading = true;
-    console.log('Iniciando carga de encuesta ID:', id);
     
     this.surveyService.getSurveyById(id)
       .pipe(
         finalize(() => {
           this.isLoading = false;
           this.cdr.detectChanges();
-          console.log('Finalize ejecutado. isLoading:', this.isLoading);
         })
       )
       .subscribe({
         next: (survey) => {
-          console.log('Encuesta cargada exitosamente:', survey);
-          
           // Convertir del formato backend al formato del formulario
           this.survey = {
             id: survey.id,
@@ -121,15 +125,46 @@ export class SurveyFormComponent implements OnInit {
             }))
           };
           
-          console.log('Survey convertida al formato del formulario:', this.survey);
           this.cdr.detectChanges();
+          // Capturar el estado inicial después de cargar
+          this.captureInitialState();
         },
-        error: (error) => {
-          console.error('Error al cargar la encuesta:', error);
-          alert('Error al cargar la encuesta. Regresando al dashboard.');
+        error: async (error) => {
+          await this.modalService.showError(
+            'Error al cargar',
+            'No se pudo cargar la encuesta. Regresando al dashboard.'
+          );
           this.router.navigate(['/dashboard']);
         }
       });
+  }
+
+  /**
+   * Captura el estado inicial del survey para detectar cambios
+   */
+  private captureInitialState(): void {
+    this.initialSurveyState = JSON.stringify({
+      title: this.survey.title,
+      description: this.survey.description,
+      status: this.survey.status,
+      expiresAt: this.survey.expiresAt,
+      questions: this.survey.questions
+    });
+    this.hasUnsavedChanges = false;
+  }
+
+  /**
+   * Marca que hay cambios sin guardar
+   */
+  markAsChanged(): void {
+    const currentState = JSON.stringify({
+      title: this.survey.title,
+      description: this.survey.description,
+      status: this.survey.status,
+      expiresAt: this.survey.expiresAt,
+      questions: this.survey.questions
+    });
+    this.hasUnsavedChanges = this.initialSurveyState !== currentState;
   }
 
   /**
@@ -184,14 +219,20 @@ export class SurveyFormComponent implements OnInit {
     return ['RADIO', 'CHECKBOX', 'SELECT'].includes(type);
   }
 
-  addQuestion(): void {
+  async addQuestion(): Promise<void> {
     if (!this.newQuestion.title.trim()) {
-      alert('El título de la pregunta es obligatorio');
+      await this.modalService.showWarning(
+        'Campo requerido',
+        'El título de la pregunta es obligatorio.'
+      );
       return;
     }
 
     if (this.needsOptions(this.newQuestion.type) && this.newQuestion.options.length === 0) {
-      alert('Debes agregar al menos una opción para este tipo de pregunta');
+      await this.modalService.showWarning(
+        'Opciones requeridas',
+        'Debes agregar al menos una opción para este tipo de pregunta.'
+      );
       return;
     }
 
@@ -203,37 +244,50 @@ export class SurveyFormComponent implements OnInit {
 
     this.newQuestion = this.getEmptyQuestion();
     this.newQuestionOptionInput = '';
+    this.markAsChanged();
   }
 
   editQuestion(question: Question): void {
     question.isEditing = true;
   }
 
-  saveQuestionEdit(question: Question): void {
+  async saveQuestionEdit(question: Question): Promise<void> {
     if (!question.title.trim()) {
-      alert('El título de la pregunta es obligatorio');
+      await this.modalService.showWarning(
+        'Campo requerido',
+        'El título de la pregunta es obligatorio.'
+      );
       return;
     }
 
     if (this.needsOptions(question.type) && question.options.length === 0) {
-      alert('Debes agregar al menos una opción para este tipo de pregunta');
+      await this.modalService.showWarning(
+        'Opciones requeridas',
+        'Debes agregar al menos una opción para este tipo de pregunta.'
+      );
       return;
     }
 
     question.isEditing = false;
+    this.markAsChanged();
   }
 
   cancelQuestionEdit(question: Question): void {
     question.isEditing = false;
   }
 
-  removeQuestion(index: number): void {
-    if (confirm('¿Estás seguro de eliminar esta pregunta?')) {
+  async removeQuestion(index: number): Promise<void> {
+    const confirmed = await this.modalService.showConfirm(
+      'Eliminar pregunta',
+      '¿Estás seguro de eliminar esta pregunta? Esta acción no se puede deshacer.'
+    );
+    if (confirmed) {
       this.survey.questions.splice(index, 1);
       // Reordenar
       this.survey.questions.forEach((q, i) => {
         q.order = i + 1;
       });
+      this.markAsChanged();
     }
   }
 
@@ -247,6 +301,7 @@ export class SurveyFormComponent implements OnInit {
       this.survey.questions.forEach((q, i) => {
         q.order = i + 1;
       });
+      this.markAsChanged();
     }
   }
 
@@ -260,17 +315,24 @@ export class SurveyFormComponent implements OnInit {
       this.survey.questions.forEach((q, i) => {
         q.order = i + 1;
       });
+      this.markAsChanged();
     }
   }
 
-  saveSurvey(): void {
+  async saveSurvey(): Promise<void> {
     if (!this.survey.title.trim()) {
-      alert('El título de la encuesta es obligatorio');
+      await this.modalService.showWarning(
+        'Campo requerido',
+        'El título de la encuesta es obligatorio.'
+      );
       return;
     }
 
     if (this.survey.questions.length === 0) {
-      alert('Debes agregar al menos una pregunta');
+      await this.modalService.showWarning(
+        'Sin preguntas',
+        'Debes agregar al menos una pregunta a la encuesta.'
+      );
       return;
     }
 
@@ -291,29 +353,46 @@ export class SurveyFormComponent implements OnInit {
       }))
     };
 
-    console.log('Payload a enviar:', payload);
-
     const request$ = this.isEditMode && this.surveyId
-      ? this.surveyService.updateSurvey(this.surveyId, payload)  // Enviar todo incluyendo questions
+      ? this.surveyService.updateSurvey(this.surveyId, payload)
       : this.surveyService.createSurvey(payload);
 
-    request$
-      .pipe(finalize(() => this.isSaving = false))
-      .subscribe({
-        next: (survey) => {
-          console.log('Encuesta guardada:', survey);
-          alert(this.isEditMode ? 'Encuesta actualizada exitosamente' : 'Encuesta creada exitosamente');
-          this.router.navigate(['/dashboard']);
-        },
-        error: (error) => {
-          console.error('Error al guardar la encuesta:', error);
-          alert('Error al guardar la encuesta. Por favor, intenta nuevamente.');
-        }
-      });
+    request$.subscribe({
+      next: async (survey) => {
+        this.isSaving = false;
+        this.cdr.detectChanges();
+        
+        await this.modalService.showSuccess(
+          'Encuesta guardada',
+          this.isEditMode ? 'La encuesta ha sido actualizada exitosamente.' : 'La encuesta ha sido creada exitosamente.'
+        );
+        this.router.navigate(['/dashboard']);
+      },
+      error: async (error) => {
+        this.isSaving = false;
+        this.cdr.detectChanges();
+        
+        await this.modalService.showError(
+          'Error al guardar',
+          'No se pudo guardar la encuesta. Por favor, intenta nuevamente.'
+        );
+      }
+    });
   }
 
-  cancel(): void {
-    if (confirm('¿Estás seguro de cancelar? Los cambios no guardados se perderán.')) {
+  async cancel(): Promise<void> {
+    // Si no hay cambios, navegar directamente
+    if (!this.hasUnsavedChanges) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
+
+    // Si hay cambios, pedir confirmación
+    const confirmed = await this.modalService.showConfirm(
+      'Cancelar edición',
+      '¿Estás seguro de cancelar? Los cambios no guardados se perderán.'
+    );
+    if (confirmed) {
       this.router.navigate(['/dashboard']);
     }
   }
@@ -373,6 +452,7 @@ export class SurveyFormComponent implements OnInit {
     if (option) {
       question.options.push(option);
       question.tempOption = '';
+      this.markAsChanged();
     }
   }
 
@@ -381,6 +461,7 @@ export class SurveyFormComponent implements OnInit {
    */
   removeOptionFromQuestion(question: Question, index: number): void {
     question.options.splice(index, 1);
+    this.markAsChanged();
   }
 
   /**
@@ -391,6 +472,7 @@ export class SurveyFormComponent implements OnInit {
       const temp = question.options[index];
       question.options[index] = question.options[index - 1];
       question.options[index - 1] = temp;
+      this.markAsChanged();
     }
   }
 
@@ -402,6 +484,7 @@ export class SurveyFormComponent implements OnInit {
       const temp = question.options[index];
       question.options[index] = question.options[index + 1];
       question.options[index + 1] = temp;
+      this.markAsChanged();
     }
   }
 
